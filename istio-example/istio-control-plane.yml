@@ -1,0 +1,49 @@
+
+apiVersion: install.istio.io/v1alpha2
+kind: IstioControlPlane
+metadata:
+  namespace: istio-operator
+  name: istiocontrolplane
+spec:
+  profile: default
+  components:
+    ingressGateways:
+      - enabled: true
+        name: istio-ingressgateway
+        k8s:
+          nodeSelector:
+            node_pool: "service-node-pool"
+          replicaCount: 3
+          hpaSpec:
+            maxReplicas: 10
+            minReplicas: 3
+          overlays:
+            - kind: Deployment
+              name: istio-ingressgateway
+              patches:
+                - path: spec.template.spec.readinessGates
+                  value:
+                    - conditionType: "cloud.google.com/load-balancer-neg-ready"
+            - kind: Service
+              name: istio-ingressgateway
+              patches:
+                - path: metadata
+                  value:
+                    name: istio-ingressgateway
+                    namespace: istio-system
+                    labels:
+                      app: istio-ingressgateway
+                      istio: ingressgateway
+                      release: istio
+                    annotations:
+                      cloud.google.com/neg: '{"exposed_ports": {"80":{}}}'
+                      anthos.cft.dev/autoneg: '{"name":"istio-ingressgateway", "max_rate_per_endpoint":100}'
+                - path: spec.type
+                  value: NodePort
+                - path: spec.externalTrafficPolicy
+                  value: ""
+    pilot:
+      enabled: true
+      k8s:
+        nodeSelector:
+          node_pool: "service-node-pool"

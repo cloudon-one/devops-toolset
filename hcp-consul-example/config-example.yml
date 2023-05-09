@@ -1,0 +1,51 @@
+# Configure global settings in this section.
+global:
+  name: consul
+  # Bootstrap ACLs within Consul. This is highly recommended.
+  acls:
+    manageSystemACLs: true
+  # Gossip encryption
+  #gossipEncryption:
+  #  secretName: 'consul-gossip-encryption-key'
+  #  secretKey: 'key'
+# Configure your Consul servers in this section.
+server:
+  # Specify three servers that wait until all are healthy to bootstrap the Consul cluster.
+  replicas: 3
+  # Specify the resources that servers request for placement. These values will serve a large environment.
+  resources:
+    requests:
+      memory: "2Gi"
+      cpu: "2"
+      disk: "300Gi"
+    limits:
+      memory: "4Gi"
+      cpu: "2"
+      disk: "50Gi"
+  # If using Enterprise, reference the Kubernetes secret that holds your license here
+  #enterpriseLicense:
+  #  secretName: 'consul-license'
+  #  secretKey: 'key'
+  nodeSelector: consul-vault-pool
+# Configure Consul clients in this section
+client:
+  # Specify the resources that clients request for deployment.
+  resources:
+    requests:
+      memory: "2Gi"
+      cpu: "2"
+      disk: "30Gi"
+    limits:
+      memory: "4Gi"
+      cpu: "2"
+      disk: "50Gi"
+    extraConfig: |
+      {"advertise_reconnect_timeout": "15m"}    
+# Enable and configure the Consul UI.
+ui:
+  enabled: true
+# Enable Consul connect pod injection
+connectInject:
+  enabled: true
+controller:
+  enabled: true

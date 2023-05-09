@@ -1,0 +1,75 @@
+.deploy-app:
+  script:
+    - gsutil -m cp -r $APP_DIR gs://$CDN_BUCKET/$APP-NAME/
+    - gsutil -m cp -r $SDK_DIR gs://$CDN_BUCKET/sdk/apps/com-center/
+ 
+# PROD
+deploy-app-prod:
+  stage: deploy
+  environment:
+    name: prod
+  variables:
+    environment: "prod"
+    cdn_bucket: "YOU-PROD-CDN-BUCKET-NAME"
+    gcp_project_id: "YOU-ROD-PROJECT-ID"
+    gcp_region: "YOUR-REGION"
+    app_name: "YOUR-APP-NAME"
+    local_dir: ""
+    sdk_dir: ""
+  script:
+    - !include .deploy-app.yml
+      # YAML with content you want to include
+
+  rules:
+    - if: '$CI_COMMIT_BRANCH =~ /^feature\/.*/ && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"'
+  tags:
+    - prod
+
+
+# DEV
+deploy-app-dev:
+  stage: deploy
+  environment:
+    name: dev
+  variables:
+    environment: "Dev"
+    cdn_bucket: "YOU-DEV-CDN-BUCKET-NAME"
+    gcp_project_id: "YOU-DEV-PROJECT-ID"
+    gcp_region: "YOUR-REGION"
+    app_name: "YOUR-APP-NAME"
+    local_dir: ""
+    sdk_dir: ""
+  script:
+    - !include .deploy-app.yml
+      # YAML with content you want to include
+
+  rules:
+    - if: '$CI_COMMIT_BRANCH =~ /^feature\/.*/ && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"'
+  tags:
+    - dev
+
+
+
+
+# QA
+deploy-app-qa:
+  stage: deploy
+  environment:
+    name: qa
+  variables:
+    environment: "qa"
+    cdn_bucket: "YOU-QA-CDN-BUCKET-NAME"
+    gcp_project_id: "YOU-QA-PROJECT-ID"
+    gcp_region: "YOUR-REGION"
+    app_name: "YOUR-APP-NAME"
+    local_dir: ""
+    sdk_dir: ""
+  script:
+    - !include .deploy-app.yml
+      # YAML with content you want to include
+
+  rules:
+    - if: '$CI_COMMIT_BRANCH =~ /^feature\/.*/ && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"'
+  tags:
+    - qa
+

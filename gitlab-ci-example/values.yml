@@ -1,0 +1,200 @@
+## GitLab Runner Image
+
+
+image: gitlab/gitlab-runner:alpine-v13.10.0
+imagePullPolicy: IfNotPresent
+replicas: 3
+gitlabUrl: https://gitlab.cloudon.one/
+unregisterRunners: true
+terminationGracePeriodSeconds: 3600
+concurrent: 10
+checkInterval: 30
+rbac:
+  create: false
+  rules:
+    - resources: ["pods", "secrets"]
+      verbs: ["get", "list", "watch", "create", "patch", "delete"]
+    - apiGroups: [""]
+      resources: ["pods/exec"]
+      verbs: ["create", "patch", "delete"]
+  clusterWideAccess: true
+  serviceAccountName: gitlab-runner
+  podSecurityPolicy:
+    enabled: false
+    resourceNames:
+      - gitlab-runner
+metrics:
+  enabled: true
+runners:
+  config: |
+    [[runners]]
+    [runners.kubernetes]
+       image = "docker:20.04"
+       privileged = true
+       [[runners.kubernetes.volumes.host_path]]
+         name = "docker"
+         mount_path = "/var/run/docker.sock"
+         read_only = false
+         host_path = "/var/run/docker.sock"
+       #[[runners.kubernetes.volumes.pvc]]
+       #  name = "project-source-code"
+       #  mount_path = "/shared_builds"
+       #[[runners.kubernetes.volumes.config_map]]
+       #  name = "docker-daemon"
+       #  mount_path = "/etc/docker/daemon.json"
+       #  sub_path = "docker_daemon.json"
+       #[runners.kubernetes.dns_config]
+       #  nameservers = [
+       #    "10.182.144.10",
+       #    "192.168.2.252",
+       #  ]
+       #  searches = [
+       #    "walkmernd.com",
+       #  ]
+    # [runners.docker]
+    #    image = "ubuntu:18.04"
+    # [[runners]]
+    # name = "ubuntu:18.04"
+    #   limit = 0
+    #   executor = "docker"
+    #   builds_dir = ""
+    #   [runners.docker]
+    #     host = ""
+    #     image = "ubuntu:18.04"
+    #     privileged = true
+    #     disable_cache = false
+    #     cache_dir = ""
+
+  executor: kubernetes
+  runUntagged: false
+  privileged: true
+  cache:
+    {}
+
+  builds:
+    {
+    puLimit": 200m,
+    "cpuLimitOverwriteMaxAllowed": 400m,
+    "memoryLimit": 256Mi
+    }
+
+  services:
+    {
+    cpuLimit: 200m,
+    memoryLimit: 256Mi,
+    cpuRequests: 100m,
+    memoryRequests: 128Mi
+    }
+  
+  helpers:
+    {}
+  
+pod_security_context:
+  #   run_as_non_root: true
+  #   run_as_user: 100
+  #   run_as_group: 100
+  #   fs_group: 65533
+  #   supplemental_groups: [101, 102]
+
+ 
+  serviceAccountName: gitlab-runner
+
+
+securityContext:
+  runAsUser: 100
+  # runAsGroup: 65533
+
+resources:
+  {}
+
+affinity: {}
+
+
+nodeSelector:
+  {}
+  # Example: The gitlab runner manager should not run on spot instances so you can assign
+  # them to the regular worker nodes only.
+  # node-role.kubernetes.io/worker: "true"
+
+## List of node taints to tolerate (requires Kubernetes >= 1.6)
+## Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+##
+tolerations:
+  []
+  # Example: Regular worker nodes may have a taint, thus you need to tolerate the taint
+  # when you assign the gitlab runner manager with nodeSelector or affinity to the nodes.
+  # - key: "node-role.kubernetes.io/worker"
+  #   operator: "Exists"
+
+## Configure environment variables that will be present when the registration command runs
+## This provides further control over the registration process and the config.toml file
+## ref: `gitlab-runner register --help`
+## ref: https://docs.gitlab.com/runner/configuration/advanced-configuration.html
+##
+# envVars:
+#   - name: RUNNER_EXECUTOR
+#     value: kubernetes
+
+## list of hosts and IPs that will be injected into the pod's hosts file
+hostAliases:
+  []
+  # Example:
+  # - ip: "127.0.0.1"
+  #   hostnames:
+  #   - "foo.local"
+  #   - "bar.local"
+  # - ip: "10.1.2.3"
+  #   hostnames:
+  #   - "foo.remote"
+  #   - "bar.remote"
+
+## Annotations to be added to manager pod
+##
+podAnnotations:
+  {}
+  # Example:
+  # iam.amazonaws.com/role: <my_role_arn>
+
+## Labels to be added to manager pod
+##
+podLabels:
+  {}
+  # Example:
+  # owner.team: <my_cool_team>
+
+## HPA support for custom metrics:
+## This section enables runners to autoscale based on defined custom metrics.
+## In order to use this functionality, Need to enable a custom metrics API server by
+## implementing "custom.metrics.k8s.io" using supported third party adapter
+## Example: https://github.com/directxman12/k8s-prometheus-adapter
+##
+hpa:
+  {}
+  # minReplicas: 1
+  # maxReplicas: 10
+  # metrics:
+  # - type: Pods
+  #   pods:
+  #     metricName: gitlab_runner_jobs
+  #     targetAverageValue: 400m
+
+## Secrets to be additionally mounted to the containers.
+## All secrets are mounted through init-runner-secrets volume
+## and placed as readonly at /init-secrets in the init container
+## and finally copied to an in-memory volume runner-secrets that is
+## mounted at /secrets.
+secrets:
+  []
+  # Example:
+  # - name: my-secret
+  # - name: myOtherSecret
+  #   items:
+  #     - key: key_one
+  #       path: path_one
+
+## Additional config files to mount in the containers in `/configmaps`.
+##
+## Please note that a number of keys are reserved by the runner.
+## See https://gitlab.com/gitlab-org/charts/gitlab-runner/-/blob/master/templates/configmap.yaml
+## for a current list.
+configMaps: {}
