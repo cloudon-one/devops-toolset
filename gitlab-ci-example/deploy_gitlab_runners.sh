@@ -34,7 +34,7 @@ kubectl --namespace gitlab-ci apply -f pvc.yaml
 kubectl apply -f clusterrolebinding.yaml
 
 helm upgrade gitlab-runner gitlab/gitlab-runner --install --namespace gitlab-ci -f ./values.yaml \
-  --set gitlabUrl=https://gitlab.walkmernd.com/ \
+  --set gitlabUrl=https://gitlab.cloudon.one/ \
   --set runnerRegistrationToken="$GITLAB_RUNNER_REGISTRATION_TOKEN" \
   --set name="gitlab-runner-${GKE_CLUSTER_NAME}" \
   --set fullnameOverride="gitlab-runner-${GKE_CLUSTER_NAME}" \
