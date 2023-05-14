@@ -35,7 +35,7 @@ kubectl label namespace "$NAMESPACE" istio-injection=enabled --overwrite
 
 4. Then you need to create 2 k8s resources: Istio Gateway and Istio VirtualService
 
-Examples for communication-center app
+Examples for cloudon-demo app
 
 `Gateway` manifest
 
@@ -71,17 +71,17 @@ apiVersion: networking.istio.io/v1beta1
 kind: VirtualService
 metadata:
   annotations:
-    meta.helm.sh/release-name: communication-center-server
-    meta.helm.sh/release-namespace: og-9
+    meta.helm.sh/release-name: cloudon-demo
+    meta.helm.sh/release-namespace: cloudon-demo
   labels:
-    app.kubernetes.io/helm-release: communication-center-server
+    app.kubernetes.io/helm-release: cloudon-demo
     app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/service: communication-center
+    app.kubernetes.io/service: cloudon-demo
     helm.sh/chart: microservice-1.0.0
   name: communication-center
 spec:
   gateways:
-  - communication-center-gateway
+  - cloudon-demo
   hosts:
   - '*'
   http:
@@ -91,7 +91,7 @@ spec:
     name: root
     route:
     - destination:
-        host: communication-center
+        host: cloudon-demo
         port:
           number: 80
 ```
